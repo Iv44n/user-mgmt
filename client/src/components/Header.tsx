@@ -10,8 +10,8 @@ function Header({ title }: { title: string }) {
 
   return (
     <header className='p-4 flex items-center justify-center relative'>
-      {path !== '/' && (
-        <Link to='/' className='text-blue-500 absolute left-4'>
+      {path !== '/home' && path !== '/' && (
+        <Link to='/home' className='text-blue-500 absolute left-4'>
           <svg
             xmlns='http://www.w3.org/2000/svg'
             height='20px'

@@ -1,10 +1,11 @@
 import DisplayOption from '../components/DisplayOption'
 import { useUserStore } from '../store/userStore'
-import { User } from '../types/user'
 
 function Home() {
-  const user = useUserStore(state => state.user) || {} as User
-  
+  const user = useUserStore((state) => state.user)
+
+  if (!user) return <div>gola</div>
+
   return (
     <article className='border border-blue-300 rounded-xl bg-white'>
       <DisplayOption

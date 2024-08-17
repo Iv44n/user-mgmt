@@ -3,6 +3,7 @@ import 'express-async-errors'
 import mongoose from 'mongoose'
 import { MONGODB_URI } from './utils/config.js'
 import usersRouter from './routes/users.js'
+import loginRouter from './routes/login.js'
 import { errorHandler, unknownEndpoint } from './utils/middlewares.js'
 
 const app = express()
@@ -17,6 +18,7 @@ mongoose.connect(MONGODB_URI)
   })
 
 app.use('/api/users', usersRouter)
+app.use('/api/login', loginRouter)
 
 app.use(unknownEndpoint)
 app.use(errorHandler)

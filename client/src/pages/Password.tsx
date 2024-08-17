@@ -3,6 +3,7 @@ import PasswordInput from '../components/PasswordInput'
 import { useUserStore } from '../store/userStore'
 import { FormEvent, useEffect, useState } from 'react'
 import ButtonExtended from '../components/Button'
+import { Errors } from '../types/user'
 
 const initialFormData = {
   currentPassword: '',
@@ -11,41 +12,84 @@ const initialFormData = {
 }
 
 function PasswordPage() {
-  const { updatePassword, user, errors, setErrors } = useUserStore()
+  const { updatePassword, user, errors, setErrors, setSuccess } = useUserStore()
   const [formData, setFormData] = useState(initialFormData)
+
+  const incorrectPassword = errors?.invalidPassword?.incorrectPassword
+  const passwordError = errors?.invalidPassword?.passwordError
+
+  useEffect(() => {
+    setFormData(initialFormData)
+  }, [user])
 
   useEffect(() => {
     const { newPassword, confirmPassword } = formData
-    if (newPassword !== confirmPassword) {
-      setErrors({
-        ...errors,
-        passwordError: { error: true, helperText: 'Passwords do not match' },
-      })
-    } else {
-      setErrors({ ...errors, passwordError: { error: false, helperText: '' } })
-    }
+    const isConfirmPasswordValid = newPassword !== confirmPassword
+
+    const errorState = {
+      ...errors,
+      invalidPassword: {
+        ...errors?.invalidPassword,
+        passwordError: {
+          error: isConfirmPasswordValid,
+          helperText: isConfirmPasswordValid ? 'Passwords do not match' : '',
+        },
+      },
+    } as Errors
+
+    setErrors(errorState)
   }, [formData.confirmPassword])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
 
     const { currentPassword, newPassword } = formData
+    const passwordData = { oldPassword: currentPassword, newPassword }
 
-    const res = await updatePassword(
-      { oldPassword: currentPassword, newPassword },
-      user?.id || ''
-    )
+    const res = await updatePassword({
+      userId: user?.id as string,
+      passwordData,
+    })
 
     if (res.isError && res.statusText === 'ERROR') {
       setErrors({
         ...errors,
-        invalidPassword: { error: res.isError, helperText: res.helperText },
-      })
+        invalidPassword: {
+          incorrectPassword: {
+            error: res.helperText === 'Incorrect password' ? true : false,
+            helperText:
+              res.helperText !==
+              'The new password must be different from the old password'
+                ? res.helperText
+                : '',
+          },
+          passwordError: {
+            error:
+              res.helperText ===
+              'The new password must be different from the old password'
+                ? true
+                : false,
+            helperText: res.helperText,
+          },
+        },
+      } as Errors)
+    }
+
+    if (!res.isError && res.statusText === 'OK') {
+      setFormData(initialFormData)
+      setSuccess({ message: res.helperText, isActive: true })
     }
   }
 
   const handleChange = (value: string, inputId: string) => {
     setFormData((prevFormData) => ({ ...prevFormData, [inputId]: value }))
+    setErrors({
+      ...errors,
+      invalidPassword: {
+        incorrectPassword: { error: false, helperText: '' },
+        ...passwordError,
+      },
+    } as Errors)
   }
 
   return (
@@ -63,28 +107,30 @@ function PasswordPage() {
           label='Current Password'
           value={formData.currentPassword}
           handleChange={handleChange}
-          error={errors.invalidPassword.error}
-          helperText={errors.invalidPassword.helperText}
+          error={incorrectPassword?.error}
+          helperText={incorrectPassword?.helperText}
         />
         <PasswordInput
           id='newPassword'
           label='New Password'
           value={formData.newPassword}
           handleChange={handleChange}
-          error={errors.passwordError.error}
-          helperText={errors.passwordError.helperText}
+          error={passwordError?.error}
+          helperText={passwordError?.helperText}
         />
         <PasswordInput
           id='confirmPassword'
           label='Confirm New Password'
           value={formData.confirmPassword}
           handleChange={handleChange}
-          error={errors.passwordError.error}
-          helperText={errors.passwordError.helperText}
+          error={passwordError?.error}
+          helperText={passwordError?.helperText}
         />
         <p className='text-center text-sky-600'>Forgot password?</p>
       </div>
-      <ButtonExtended />
+      <ButtonExtended
+        disabled={incorrectPassword?.error || passwordError?.error}
+      />
     </Box>
   )
 }

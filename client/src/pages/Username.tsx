@@ -1,18 +1,52 @@
-import { Button, TextField, Box } from '@mui/material'
+import { TextField, Box } from '@mui/material'
 import { useUserStore } from '../store/userStore'
-import { FormEvent, useState } from 'react'
-import { validateName } from '../utils/validateForm'
+import { FormEvent, useEffect, useState } from 'react'
+import { Errors } from '../types/user'
+import ButtonExtended from '../components/Button'
 
 function UserNamePage() {
-  const { user, updateUser } = useUserStore()
+  const { user, setUser, updateUser, errors, setErrors, setSuccess } =
+    useUserStore()
   const [username, setUsername] = useState(user?.username || '')
 
-  const usernameError = validateName(username)
+  const { invalidUserName } = errors || {}
+
+  useEffect(() => {
+    const newErrors = {
+      invalidUserName: {
+        error: username.length < 3,
+        helperText:
+          username.length < 3 ? 'Username must be at least 3 characters' : '',
+      },
+    }
+
+    setErrors({
+      ...errors,
+      invalidUserName: newErrors.invalidUserName,
+    } as Errors)
+  }, [username])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (user) {
-      await updateUser({ ...user, username })
+    if (!user) return
+
+    const res = await updateUser({ ...user, username })
+
+
+    if (res.isError && res.statusText === 'ERROR') {
+      setErrors({
+        ...errors,
+        invalidUserName: {
+          ...errors?.invalidUserName,
+          error: true,
+          helperText: res.helperText,
+        },
+      } as Errors)
+    }
+
+    if (!res.isError && res.statusText === 'OK') {
+      setUser({ ...user, username })
+      setSuccess({ message: res.helperText, isActive: true })
     }
   }
 
@@ -33,16 +67,10 @@ function UserNamePage() {
         fullWidth
         value={username}
         onChange={(e) => setUsername(e.target.value)}
-        error={usernameError.hasError}
-        helperText={usernameError.helperText}
+        error={invalidUserName?.error}
+        helperText={invalidUserName?.helperText}
       />
-      <Button
-        disabled={!username || usernameError.hasError}
-        type='submit'
-        variant='contained'
-      >
-        Save
-      </Button>
+      <ButtonExtended disabled={!username || invalidUserName?.error} />
     </Box>
   )
 }

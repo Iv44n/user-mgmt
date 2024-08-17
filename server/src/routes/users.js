@@ -5,11 +5,6 @@ import { SALTS } from '../utils/config.js'
 
 const usersRouter = Router()
 
-usersRouter.get('/', async (req, res) => {
-  const users = await User.find({})
-  res.json(users)
-})
-
 usersRouter.get('/:id', async (req, res) => {
   const user = await User.findById(req.params.id)
   res.json(user)
@@ -55,6 +50,10 @@ usersRouter.put('/:id', async (req, res) => {
 usersRouter.put('/:id/password', async (req, res) => {
   const userId = req.params.id
   const { oldPassword, newPassword } = req.body
+
+  if (oldPassword === newPassword) {
+    return res.status(400).json({ error: 'The new password must be different from the old password' })
+  }
 
   const user = await User.findById(userId)
   if (!user) {

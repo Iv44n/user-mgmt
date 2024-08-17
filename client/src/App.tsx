@@ -1,35 +1,41 @@
-import { useEffect } from 'react'
-import { useUserStore } from './store/userStore'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom'
 import Home from './pages/Home'
 import NamePage from './pages/Name'
 import UserNamePage from './pages/Username'
 import PasswordPage from './pages/Password'
 import Layout from './components/Layout'
+import Login from './pages/Login'
+import { useUserStore } from './store/userStore'
 
 function App() {
-  const { user, getUser } = useUserStore()
-
-  useEffect(() => {
-    const id = '66bf92eaa86bb31a4cc3611e'
-    getUser(id)
-  }, [])
-
-  if (!user) return <div>Loading...</div>
+  const user = useUserStore((state) => state.user)
 
   return (
-    <>
-      <Router>
-        <Routes>
-          <Route path='/' element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path='name' element={<NamePage />} />
-            <Route path='username' element={<UserNamePage />} />
-            <Route path='changePassword' element={<PasswordPage />} />
-          </Route>
-        </Routes>
-      </Router>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path='/' element={<Layout />}>
+          <Route index element={<Login />} />
+          <Route path='home' element={user ? <Home /> : <Navigate to='/' />} />
+          <Route
+            path='name'
+            element={user ? <NamePage /> : <Navigate to='/' />}
+          />
+          <Route
+            path='username'
+            element={user ? <UserNamePage /> : <Navigate to='/' />}
+          />
+          <Route
+            path='changePassword'
+            element={user ? <PasswordPage /> : <Navigate to='/' />}
+          />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   )
 }
 

@@ -1,4 +1,6 @@
 import { Schema, model } from 'mongoose'
+import bcrypt from 'bcrypt'
+import { SALTS } from '../utils/config.js'
 
 const userSchema = new Schema({
   name: {
@@ -23,10 +25,12 @@ const userSchema = new Schema({
   },
   email: {
     type: String,
-    required: true
+    required: true,
+    match: /.+@.+\..+/
   },
   phoneNumber: {
-    type: String
+    type: String,
+    match: /^[0-9]{10,15}$/
   }
 })
 
@@ -39,4 +43,32 @@ userSchema.set('toJSON', {
   }
 })
 
-export default model('User', userSchema)
+const User = model('User', userSchema)
+
+const createAdminUser = async () => {
+  const existingUser = await User.findOne({ username: 'admin' })
+  if (existingUser) {
+    console.log('Admin user already exists')
+    return
+  }
+
+  const passwordHash = await bcrypt.hash('admin', SALTS)
+
+  const admin = new User({
+    name: {
+      firstName: 'Admin',
+      lastName: 'User'
+    },
+    username: 'admin',
+    passwordHash,
+    email: 'admin@localhost',
+    phoneNumber: '1234567890'
+  })
+
+  await admin.save()
+  console.log('Admin user created')
+}
+
+createAdminUser()
+
+export default User

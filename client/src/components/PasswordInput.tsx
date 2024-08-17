@@ -8,6 +8,7 @@ interface Props {
   handleChange: (value: string, inputId: string) => void
   error?: boolean
   helperText?: string
+  defaultValue?: string
 }
 
 function PasswordInput({
@@ -17,6 +18,7 @@ function PasswordInput({
   handleChange,
   error,
   helperText,
+  defaultValue,
 }: Props) {
   const [showPassword, setShowPassword] = useState(false)
 
@@ -35,6 +37,7 @@ function PasswordInput({
       error={error}
       helperText={helperText}
       required
+      defaultValue={defaultValue}
       InputProps={{
         endAdornment: (
           <InputAdornment position='end'>
