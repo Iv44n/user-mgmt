@@ -15,8 +15,8 @@ Este proyecto es una aplicación full stack que combina **React** con **TypeScri
     - **Zustand** para el manejo del estado global.
     - **Axios** para la gestión de solicitudes HTTP.
 
-    <img src="./assets/home.jpg" alt="Home" style="max-width: 200px;"/>
-    <img src="./assets/login.jpg" alt="Login" style="max-width: 200px;"/>
+    <img src="./assets/home.jpg" alt="Home" style="width: 200px;"/>
+    <img src="./assets/login.jpg" alt="Login" style="width: 200px;"/>
 
 - **`server`**: Lógica del servidor y la API utilizando Node.js y Express.
   - **Características**:
@@ -119,6 +119,8 @@ Para iniciar el proyecto, sigue estos pasos:
 El frontend estará disponible en `http://localhost:5173` y el backend en `http://localhost:5000` (o el puerto configurado en las variables de entorno).
 
 ## Ejemplos en videos (haz click en la imagen para reproducirla)
+
+**para reproducir el video, se recomienda hacerlo localmente despues de clonar el repositorio**
 
 ### Login
 
