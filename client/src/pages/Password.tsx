@@ -22,7 +22,9 @@ function PasswordPage() {
     setFormData(initialFormData)
   }, [user])
 
-  useEffect(() => {
+  useEffect(() => validatePassword(), [formData.confirmPassword])
+
+  const validatePassword = () => {
     const { newPassword, confirmPassword } = formData
     const isConfirmPasswordValid = newPassword !== confirmPassword
 
@@ -38,7 +40,7 @@ function PasswordPage() {
     } as Errors
 
     setErrors(errorState)
-  }, [formData.confirmPassword])
+  }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -51,43 +53,46 @@ function PasswordPage() {
       passwordData,
     })
 
-    if (res.isError && res.statusText === 'ERROR') {
-      setErrors({
-        ...errors,
-        invalidPassword: {
-          incorrectPassword: {
-            error: res.helperText === 'Incorrect password' ? true : false,
-            helperText:
-              res.helperText !==
-              'The new password must be different from the old password'
-                ? res.helperText
-                : '',
-          },
-          passwordError: {
-            error:
-              res.helperText ===
-              'The new password must be different from the old password'
-                ? true
-                : false,
-            helperText: res.helperText,
-          },
-        },
-      } as Errors)
+    if (res.isError) {
+      handleErrors(res.helperText)
+    } else {
+      handleSuccess(res.helperText)
     }
+  }
 
-    if (!res.isError && res.statusText === 'OK') {
-      setFormData(initialFormData)
-      setSuccess({ message: res.helperText, isActive: true })
+  const handleErrors = (helperText: string) => {
+    const errorMap = {
+      'Invalid password': {
+        incorrectPassword: { error: true, helperText },
+        passwordError: { error: false, helperText: '' },
+      },
+      'The new password must be different from the old password': {
+        incorrectPassword: { error: false, helperText: '' },
+        passwordError: { error: true, helperText },
+      },
     }
+    setErrors({
+      ...errors,
+      invalidPassword: errorMap[helperText as keyof typeof errorMap],
+    } as Errors)
+  }
+
+  const handleSuccess = (message: string) => {
+    setFormData(initialFormData)
+    setSuccess({ message, isActive: true })
   }
 
   const handleChange = (value: string, inputId: string) => {
     setFormData((prevFormData) => ({ ...prevFormData, [inputId]: value }))
+    resetErrors()
+  }
+
+  const resetErrors = () => {
     setErrors({
       ...errors,
       invalidPassword: {
         incorrectPassword: { error: false, helperText: '' },
-        ...passwordError,
+        passwordError: { error: false, helperText: '' },
       },
     } as Errors)
   }

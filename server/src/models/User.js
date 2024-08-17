@@ -25,12 +25,10 @@ const userSchema = new Schema({
   },
   email: {
     type: String,
-    required: true,
-    match: /.+@.+\..+/
+    required: true
   },
   phoneNumber: {
-    type: String,
-    match: /^[0-9]{10,15}$/
+    type: String
   }
 })
 

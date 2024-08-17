@@ -23,7 +23,7 @@ function Login() {
     event.preventDefault()
 
     const res = await login(userData.username, userData.password)
-    console.log(res)
+    
     if (res) {
       setUser(res)
       navigate('/home')

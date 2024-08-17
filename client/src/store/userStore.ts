@@ -7,11 +7,11 @@ import {
   UpdatePasswordParams,
   User,
 } from '../types/user'
+import { handleAxiosError } from '../utils/handleAxiosError'
 
 interface UserStore {
   user: User | null
   setUser: (user: User) => void
-  getUser: (id: string) => Promise<void>
   login: (username: string, password: string) => Promise<User | null>
   updateUser: (user: User) => Promise<ReturnUpdate>
   updatePassword: (
@@ -39,14 +39,6 @@ export const useUserStore = create<UserStore>((set) => ({
     set({ success })
     setTimeout(() => set({ success: { message: '', isActive: false } }), 2000)
   },
-  getUser: async (id) => {
-    try {
-      const { data } = await axios.get<User>(`/api/users/${id}`)
-      set({ user: data })
-    } catch (error) {
-      console.error('Failed to fetch user', error)
-    }
-  },
   login: async (username, password) => {
     try {
       const { data } = await axios.post<User>('/api/login', {
@@ -69,13 +61,11 @@ export const useUserStore = create<UserStore>((set) => ({
         data: res.data,
       }
     } catch (error) {
-      console.log(error)
-      const errorMessage =
-        axios.isAxiosError(error) && error.message
-          ? error.response?.data.error
-          : 'Unknown error'
-
-      return { statusText: 'ERROR', isError: true, helperText: errorMessage }
+      return handleAxiosError(error, (errorMessage) => ({
+        statusText: 'ERROR',
+        isError: true,
+        helperText: errorMessage,
+      }))
     }
   },
   updatePassword: async ({ userId, passwordData }) => {
@@ -87,12 +77,11 @@ export const useUserStore = create<UserStore>((set) => ({
         helperText: res.data.message,
       }
     } catch (error) {
-      const errorMessage =
-        axios.isAxiosError(error) && error.message
-          ? error.response?.data.error
-          : 'Unknown error'
-
-      return { statusText: 'ERROR', isError: true, helperText: errorMessage }
+      return handleAxiosError(error, (errorMessage) => ({
+        statusText: 'ERROR',
+        isError: true,
+        helperText: errorMessage,
+      }))
     }
   },
 }))

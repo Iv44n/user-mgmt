@@ -8,10 +8,11 @@ function UserNamePage() {
   const { user, setUser, updateUser, errors, setErrors, setSuccess } =
     useUserStore()
   const [username, setUsername] = useState(user?.username || '')
-
   const { invalidUserName } = errors || {}
 
-  useEffect(() => {
+  useEffect(() => validateUsername(), [username])
+
+  const validateUsername = () => {
     const newErrors = {
       invalidUserName: {
         error: username.length < 3,
@@ -24,7 +25,7 @@ function UserNamePage() {
       ...errors,
       invalidUserName: newErrors.invalidUserName,
     } as Errors)
-  }, [username])
+  }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -32,8 +33,7 @@ function UserNamePage() {
 
     const res = await updateUser({ ...user, username })
 
-
-    if (res.isError && res.statusText === 'ERROR') {
+    if (res.isError) {
       setErrors({
         ...errors,
         invalidUserName: {
@@ -42,9 +42,7 @@ function UserNamePage() {
           helperText: res.helperText,
         },
       } as Errors)
-    }
-
-    if (!res.isError && res.statusText === 'OK') {
+    } else {
       setUser({ ...user, username })
       setSuccess({ message: res.helperText, isActive: true })
     }

@@ -19,8 +19,8 @@ const Layout = () => {
     '/home': 'Profile Settings',
     '/name': 'Name',
     '/username': 'User Name',
-    '/email': 'Email',
-    '/phoneNumber': 'Phone Number',
+  /*   '/email': 'Email',
+    '/phoneNumber': 'Phone Number', */
     '/changePassword': 'Change Password',
   }
 

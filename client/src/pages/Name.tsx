@@ -11,22 +11,27 @@ function NamePage() {
   const [name, setName] = useState(
     user?.name || { firstName: '', lastName: '' }
   )
-  const { firstName, lastName } = errors?.invalidName || {}
+  const firstName = errors?.invalidName?.firstName
+  const lastName = errors?.invalidName?.lastName
 
-  useEffect(() => {
-    const firstNameLength = name.firstName.length
-    const lastNameLength = name.lastName.length
+  useEffect(() => validateName(), [name])
+
+  const validateName = () => {
+    const firstNameError = name.firstName.length < 3
+    const lastNameError = name.lastName.length < 3
 
     const newErrors = {
       firstName: {
-        error: firstNameLength < 3,
-        helperText:
-          firstNameLength < 3 ? 'First name must be at least 3 characters' : '',
+        error: firstNameError,
+        helperText: firstNameError
+          ? 'First name must be at least 3 characters'
+          : '',
       },
       lastName: {
-        error: lastNameLength < 3,
-        helperText:
-          lastNameLength < 3 ? 'Last name must be at least 3 characters' : '',
+        error: lastNameError,
+        helperText: lastNameError
+          ? 'Last name must be at least 3 characters'
+          : '',
       },
     }
 
@@ -34,14 +39,15 @@ function NamePage() {
       ...errors,
       invalidName: newErrors,
     } as Errors)
-  }, [name])
+  }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!user) return
+
     const res = await updateUser({ ...user, name })
 
-    if (res.isError && res.statusText === 'ERROR') {
+    if (res.isError) {
       setErrors({
         ...errors,
         invalidName: {
@@ -52,13 +58,14 @@ function NamePage() {
           },
         },
       } as Errors)
-    }
-
-    if (!res.isError && res.statusText === 'OK') {
+    } else {
       setUser({ ...user, name })
       setSuccess({ message: res.helperText, isActive: true })
     }
   }
+
+  const handleChange = (value: string, inputId: string) =>
+    setName((prev) => ({ ...prev, [inputId]: value }))
 
   return (
     <Box
@@ -71,22 +78,18 @@ function NamePage() {
     >
       <Box display='flex' flexDirection='column' gap={2}>
         <BasicInput
-          id='first-name'
+          id='firstName'
           label='First Name'
           value={name.firstName}
-          handleChange={(value) =>
-            setName((prev) => ({ ...prev, firstName: value }))
-          }
+          handleChange={(value) => handleChange(value, 'firstName')}
           error={firstName?.error}
           helperText={firstName?.helperText}
         />
         <BasicInput
-          id='last-name'
+          id='lastName'
           label='Last Name'
           value={name.lastName}
-          handleChange={(value) =>
-            setName((prev) => ({ ...prev, lastName: value }))
-          }
+          handleChange={(value) => handleChange(value, 'lastName')}
           error={lastName?.error}
           helperText={lastName?.helperText}
         />
